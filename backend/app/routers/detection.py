@@ -4,7 +4,6 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from backend.app.config import get_settings
 from backend.app.schemas.detection import DetectionResponse
 from backend.app.services.detection_service import get_detection_service
-from backend.app.services.langchain_chain import run_ai_analysis
 
 router = APIRouter(prefix="/api", tags=["detection"])
 settings = get_settings()
@@ -35,12 +34,6 @@ async def detect_upload(file: UploadFile = File(...)):
     service = get_detection_service()
     result = service.detect_from_bytes(raw, file.filename or "")
 
-    if result.success and settings.enable_ai_chain:
-        summary = f"is_tampered={result.is_tampered}, items={[r.model_dump() for r in result.result_items]}"
-        ai_text = run_ai_analysis(summary)
-        if ai_text:
-            result = result.model_copy(update={"ai_analysis": ai_text})
-
     return result
 
 
@@ -65,12 +58,6 @@ async def detect_url(url: str = Form(..., description="图片 URL")):
 
     service = get_detection_service()
     result = service.detect_from_bytes(raw, url)
-
-    if result.success and settings.enable_ai_chain:
-        summary = f"is_tampered={result.is_tampered}, items={[r.model_dump() for r in result.result_items]}"
-        ai_text = run_ai_analysis(summary)
-        if ai_text:
-            result = result.model_copy(update={"ai_analysis": ai_text})
 
     return result
 

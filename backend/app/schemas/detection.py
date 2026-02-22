@@ -2,23 +2,39 @@
 from pydantic import BaseModel, Field
 
 
-class DetectionResultItem(BaseModel):
-    """Single field in recognition result (e.g. is_tampered, ps)."""
-    field_name: str = Field(..., description="字段名")
-    content: str = Field(default="", description="信息内容")
+class PSResult(BaseModel):
+    """PS检测结果"""
+    tampered_positions: list[list[int]] = Field(default_factory=list, description="篡改位置坐标")
+    is_tampered: bool = Field(..., description="是否存在篡改")
+    image: str = Field(default="", description="图像数据")
+    tampered_scores: list[list[float]] = Field(default_factory=list, description="篡改置信度分数")
+
+
+class ImageProperty(BaseModel):
+    """图像属性"""
+    ps: PSResult = Field(..., description="PS检测结果")
+
+
+class DetectionResult(BaseModel):
+    """检测结果"""
+    image_width: int = Field(..., description="图像宽度")
+    image_property: ImageProperty = Field(..., description="图像属性")
+    image_height: int = Field(..., description="图像高度")
+
+
+class Data(BaseModel):
+    """响应数据"""
+    result: DetectionResult = Field(..., description="检测结果")
+    file_type: str = Field(default="", description="文件类型")
+    file_data: str = Field(default="", description="文件数据")
 
 
 class DetectionResponse(BaseModel):
     """Tamper detection API response."""
-    success: bool = True
-    is_tampered: bool = Field(..., description="是否存在篡改: True=有篡改, False=无篡改")
-    result_items: list[DetectionResultItem] = Field(
-        default_factory=list,
-        description="识别结果列表(字段名-信息内容)",
-    )
-    heatmap_url: str | None = Field(None, description="篡改区域热力图或标注图 URL/Base64")
-    ai_analysis: str | None = Field(None, description="LangChain AI 二次验证分析摘要")
-    message: str | None = None
+    x_request_id: str = Field(..., description="请求ID")
+    msg: str = Field(default="success", description="响应消息")
+    data: Data = Field(..., description="响应数据")
+    code: int = Field(default=200, description="响应代码")
 
 
 class HealthResponse(BaseModel):

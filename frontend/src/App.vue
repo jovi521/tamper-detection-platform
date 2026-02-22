@@ -10,6 +10,7 @@
       <MainImageArea
         v-model:image-url="imageUrl"
         :current-image="currentImage"
+        :error="error"
         :loading="loading"
         @copy="copyImage"
         @file-select="onFileSelect"
@@ -48,8 +49,21 @@ function addToHistory(file: File | null, preview: string): HistoryItem {
 }
 
 function selectHistory(item: HistoryItem): void {
+  if (loading.value) {
+    // 如果正在处理中，显示提示信息
+    error.value = '请等待当前图片识别完成'
+    return
+  }
   currentImage.value = item
-  result.value = item.result ?? null
+  // 每次点击图片都触发检测请求，即使该图片已经有检测结果
+  error.value = ''
+  if (item.file) {
+    // 上传的本地文件
+    runDetectUpload(item.file, item)
+  } else if (item.preview.startsWith('http')) {
+    // 在线URL
+    runDetectUrl(item.preview, item)
+  }
 }
 
 function onFileSelect(file: File | undefined): void {
@@ -68,6 +82,7 @@ async function runDetectUpload(file: File, item: HistoryItem): Promise<void> {
     const res = await detectUpload(file)
     result.value = res
     item.result = res
+    error.value = ''  // 清除错误信息
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string }
     error.value = axiosErr.response?.data?.detail ?? axiosErr.message ?? '请求失败'
@@ -93,6 +108,7 @@ async function runDetectUrl(url: string, item: HistoryItem): Promise<void> {
     const res = await detectByUrl(url)
     result.value = res
     item.result = res
+    error.value = ''  // 清除错误信息
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string }
     error.value = axiosErr.response?.data?.detail ?? axiosErr.message ?? '请求失败'

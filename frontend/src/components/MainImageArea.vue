@@ -1,5 +1,9 @@
 <template>
   <section class="center">
+    <div v-if="error" class="error-message">
+      <span class="error-icon">⚠️</span>
+      {{ error }}
+    </div>
     <div ref="areaRef" class="image-area">
       <template v-if="currentImage?.preview">
         <img :src="currentImage.preview" alt="当前图片" class="main-image" />
@@ -12,9 +16,10 @@
       <div v-else class="placeholder">请上传本地文件或输入在线 URL 进行检测</div>
     </div>
     <div class="upload-bar">
-      <label class="btn primary">
+      <label :class="{ disabled: loading }" class="btn primary">
         上传本地文件
         <input
+          :disabled="loading"
           accept=".jpg,.jpeg,.png,.bmp,.pdf,.tiff,.tif,.webp,.gif"
           type="file"
           @change="onFileChange"
@@ -22,6 +27,7 @@
       </label>
       <div class="url-input-wrap">
         <input
+          :disabled="loading"
           :value="imageUrl"
           class="url-input"
           placeholder="输入在线文件 URL，回车/Enter 发起调用"
@@ -45,6 +51,7 @@ defineProps<{
   currentImage: HistoryItem | null
   imageUrl: string
   loading: boolean
+  error: string
 }>()
 
 const emit = defineEmits<{
@@ -79,6 +86,24 @@ function submitUrl(): void {
   flex-direction: column;
   padding: 0 1rem;
   min-width: 0;
+}
+
+.error-message {
+  background-color: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  color: #92400e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.error-icon {
+  font-size: 1.25rem;
 }
 
 .image-area {
@@ -168,11 +193,27 @@ function submitUrl(): void {
   border: none;
 }
 
+.btn.primary.disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
 .btn.primary input {
   position: absolute;
   width: 0;
   height: 0;
   opacity: 0;
+}
+
+.url-input:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+}
+
+.url-input:disabled:focus {
+  box-shadow: none;
+  border-color: #e2e8f0;
 }
 
 .url-input-wrap {

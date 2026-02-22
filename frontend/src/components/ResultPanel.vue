@@ -31,9 +31,6 @@
     <div v-if="heatmapDataUrl" class="result-image-wrap">
       <img :src="heatmapDataUrl" alt="篡改区域标注" />
     </div>
-    <div v-if="error" class="error">
-      {{ error }}
-    </div>
   </aside>
 </template>
 

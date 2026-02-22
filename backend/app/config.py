@@ -6,6 +6,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # 无论从项目根还是 backend 目录启动，都从 backend 目录加载 .env
 _ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
+# 项目根目录
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+# Temp目录
+_TEMP_DIR = _PROJECT_ROOT / "temp"
 
 
 class Settings(BaseSettings):
@@ -26,9 +30,16 @@ class Settings(BaseSettings):
     allowed_extensions: frozenset[str] = frozenset(
         {"jpg", "jpeg", "png", "bmp", "pdf", "tiff", "tif", "webp", "gif"}
     )
+    # Temp目录配置
+    temp_dir: Path = _TEMP_DIR
     # LangChain / AI (optional)
     openai_api_key: str | None = None
     enable_ai_chain: bool = False
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # 确保temp目录存在
+        self.temp_dir.mkdir(exist_ok=True)
 
 
 @lru_cache
