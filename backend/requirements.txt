@@ -1,0 +1,22 @@
+# Web
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# Image & file
+python-multipart>=0.0.6
+Pillow>=10.2.0
+
+# LangChain & AI (optional, for AI analysis chain)
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langchain-community>=0.0.20
+
+# HTTP client (for URL fetch)
+httpx>=0.26.0
+
+# Env
+python-dotenv>=1.0.0
+
+# Schema / validation
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
