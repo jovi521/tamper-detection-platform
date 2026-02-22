@@ -33,10 +33,10 @@ def get_ai_analysis_chain():
             return [HumanMessage(content=prompt)]
 
         chain = (
-            RunnablePassthrough.assign(summary=lambda x: x.get("summary", ""))
-            | chain_input
-            | llm
-            | StrOutputParser()
+                RunnablePassthrough.assign(summary=lambda x: x.get("summary", ""))
+                | chain_input
+                | llm
+                | StrOutputParser()
         )
         return chain
     except ImportError:

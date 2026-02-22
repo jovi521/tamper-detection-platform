@@ -7,8 +7,7 @@
   </header>
 </template>
 
-<script setup>
-</script>
+<script lang="ts" setup></script>
 
 <style scoped>
 .header {
@@ -17,11 +16,13 @@
   padding: 1rem 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
 .header h1 {
   margin: 0 0 0.25rem 0;
   font-size: 1.5rem;
   font-weight: 600;
 }
+
 .subtitle {
   margin: 0;
   font-size: 0.85rem;

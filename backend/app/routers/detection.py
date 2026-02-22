@@ -30,7 +30,7 @@ async def detect_upload(file: UploadFile = File(...)):
     if len(raw) > settings.max_upload_bytes:
         raise HTTPException(
             status_code=400,
-            detail=f"文件大小超过限制（最大 {settings.max_upload_bytes // (1024*1024)}MB）",
+            detail=f"文件大小超过限制（最大 {settings.max_upload_bytes // (1024 * 1024)}MB）",
         )
     service = get_detection_service()
     result = service.detect_from_bytes(raw, file.filename or "")
