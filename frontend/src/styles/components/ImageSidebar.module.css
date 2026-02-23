@@ -1,0 +1,34 @@
+.sidebarLeft {
+    display: flex;
+    flex-direction: column;
+}
+
+.thumbList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.thumbItem {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.thumbItem:hover {
+    border-color: #93c5fd;
+}
+
+.thumbItem.active {
+    border-color: #2563eb;
+}
+
+.thumbItem img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}

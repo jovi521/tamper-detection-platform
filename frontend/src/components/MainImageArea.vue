@@ -1,53 +1,71 @@
 <template>
-  <section class="center">
+  <section :class="styles.center">
     <div v-if="error" class="error-message">
       <span class="error-icon">⚠️</span>
       {{ error }}
     </div>
-    <div ref="areaRef" class="image-area">
+    <div ref="areaRef" :class="styles.imageArea">
       <template v-if="currentImage?.preview">
-        <img :src="currentImage.preview" alt="当前图片" class="main-image" />
-        <div v-if="loading" aria-hidden="true" class="scan-cursor" />
-        <div class="image-actions">
-          <button class="icon-btn" title="放大" type="button">🔍</button>
-          <button class="icon-btn" title="复制" type="button" @click="emit('copy')">📋</button>
+        <img
+          :class="styles.mainImage"
+          :src="currentImage.preview"
+          :style="imageStyle"
+          alt="当前图片"
+        />
+        <div v-if="loading" :class="styles.scanCursor" aria-hidden="true" />
+        <div :class="styles.imageActions">
+          <button :class="styles.iconBtn" title="放大" @click="zoomIn">🔍+</button>
+          <button :class="styles.iconBtn" title="缩小" @click="zoomOut">🔍-</button>
+          <button :class="styles.iconBtn" title="顺时针旋转" @click="rotateClockwise">↻</button>
+          <button :class="styles.iconBtn" title="逆时针旋转" @click="rotateCounterClockwise">
+            ↺
+          </button>
+          <button :class="styles.iconBtn" title="复原" @click="reset">⟲</button>
         </div>
       </template>
-      <div v-else class="placeholder">请上传本地文件或输入在线 URL 进行检测</div>
+      <div v-else :class="styles.placeholder">请上传本地文件或输入在线 URL 进行检测</div>
     </div>
-    <div class="upload-bar">
-      <label :class="{ disabled: loading }" class="btn primary">
-        上传本地文件
-        <input
-          :disabled="loading"
-          accept=".jpg,.jpeg,.png,.bmp,.pdf,.tiff,.tif,.webp,.gif"
-          type="file"
-          @change="onFileChange"
-        />
+    <div :class="styles.uploadBar">
+      <label :class="{ disabled: loading }" :disabled="loading" class="btn primary">
+        <span>上传本地文件</span>
+        <input accept="image/*" type="file" @change="onFileChange" />
       </label>
-      <div class="url-input-wrap">
-        <input
+      <div :class="styles.urlInput">
+        <div :class="styles.urlInputWrapper">
+          <input
+            v-model="localImageUrl"
+            :disabled="loading"
+            placeholder="输入在线文件 URL，回车后 Enter 键识别"
+            type="url"
+            @input="onLocalUrlChange"
+            @keyup.enter="submitUrl"
+          />
+          <button v-if="localImageUrl && !loading" :class="styles.clearBtn" @click="clearUrl">
+            ×
+          </button>
+        </div>
+        <button
+          :class="{ disabled: loading }"
           :disabled="loading"
-          :value="imageUrl"
-          class="url-input"
-          placeholder="输入在线文件 URL，回车/Enter 发起调用"
-          type="text"
-          @input="onUrlInput"
-          @keydown.enter.prevent="submitUrl"
-        />
+          class="btn primary"
+          @click="submitUrl"
+        >
+          识别
+        </button>
       </div>
     </div>
-    <p class="hint">
-      要上传的图片，目前支持 jpg、png、bmp、pdf、tiff、webp、单帧 gif，文件大小不超过 10M
+    <p :class="styles.note">
+      要上传的图片：目前支持 jpg、jpeg、png、bmp、gif、webp、svg、tiff，文件大小不超过 10M。
     </p>
   </section>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { HistoryItem } from '@/types'
+import styles from '@/styles/components/MainImageArea.module.css'
 
-defineProps<{
+const props = defineProps<{
   currentImage: HistoryItem | null
   imageUrl: string
   loading: boolean
@@ -58,10 +76,73 @@ const emit = defineEmits<{
   'update:imageUrl': [value: string]
   'file-select': [file: File]
   'url-submit': []
-  copy: []
 }>()
 
+// 本地响应式变量，用于存储输入框的值
+const localImageUrl = ref(props.imageUrl)
+
+// 监听props变化，更新本地变量
+watch(
+  () => props.imageUrl,
+  (newValue) => {
+    localImageUrl.value = newValue
+  }
+)
+
+// 当本地变量变化时，通知父组件
+function onLocalUrlChange() {
+  emit('update:imageUrl', localImageUrl.value)
+}
+
+// 清除URL输入框
+function clearUrl() {
+  localImageUrl.value = ''
+  emit('update:imageUrl', '')
+}
+
 const areaRef = ref<HTMLDivElement | null>(null)
+
+// 图片操作状态
+const zoom = ref(1)
+const rotation = ref(0)
+
+// 图片样式计算
+const imageStyle = computed(() => {
+  return {
+    transform: `scale(${zoom.value}) rotate(${rotation.value}deg)`,
+    transition: 'transform 0.3s ease',
+  }
+})
+
+// 放大
+function zoomIn(): void {
+  if (zoom.value < 3) {
+    zoom.value += 0.2
+  }
+}
+
+// 缩小
+function zoomOut(): void {
+  if (zoom.value > 0.5) {
+    zoom.value -= 0.2
+  }
+}
+
+// 顺时针旋转
+function rotateClockwise(): void {
+  rotation.value = (rotation.value + 90) % 360
+}
+
+// 逆时针旋转
+function rotateCounterClockwise(): void {
+  rotation.value = (rotation.value - 90 + 360) % 360
+}
+
+// 复原
+function reset(): void {
+  zoom.value = 1
+  rotation.value = 0
+}
 
 function onFileChange(e: Event): void {
   const target = e.target as HTMLInputElement
@@ -70,174 +151,7 @@ function onFileChange(e: Event): void {
   target.value = ''
 }
 
-function onUrlInput(e: Event): void {
-  const target = e.target as HTMLInputElement
-  emit('update:imageUrl', target?.value ?? '')
-}
-
 function submitUrl(): void {
   emit('url-submit')
 }
 </script>
-
-<style scoped>
-.center {
-  display: flex;
-  flex-direction: column;
-  padding: 0 1rem;
-  min-width: 0;
-}
-
-.error-message {
-  background-color: #fef3c7;
-  border: 1px solid #fde68a;
-  border-radius: 6px;
-  color: #92400e;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.75rem;
-  font-weight: 500;
-}
-
-.error-icon {
-  font-size: 1.25rem;
-}
-
-.image-area {
-  flex: 1;
-  min-height: 280px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.main-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.placeholder {
-  color: #94a3b8;
-  text-align: center;
-  padding: 2rem;
-}
-
-.scan-cursor {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(to bottom, transparent, rgba(37, 99, 235, 0.6), transparent);
-  box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
-  pointer-events: none;
-  animation: scan-move 1.5s ease-in-out infinite;
-}
-
-@keyframes scan-move {
-  0% {
-    top: 0;
-    opacity: 1;
-  }
-  100% {
-    top: 100%;
-    opacity: 0.8;
-  }
-}
-
-.image-actions {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  display: flex;
-  gap: 4px;
-}
-
-.icon-btn {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.upload-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.btn.primary {
-  background: #2563eb;
-  color: #fff;
-  border: none;
-}
-
-.btn.primary.disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
-}
-
-.btn.primary input {
-  position: absolute;
-  width: 0;
-  height: 0;
-  opacity: 0;
-}
-
-.url-input:disabled {
-  background: #f1f5f9;
-  cursor: not-allowed;
-  border-color: #e2e8f0;
-}
-
-.url-input:disabled:focus {
-  box-shadow: none;
-  border-color: #e2e8f0;
-}
-
-.url-input-wrap {
-  flex: 1;
-  min-width: 0;
-}
-
-.url-input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-.url-input:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-}
-
-.hint {
-  margin: 0.5rem 0 0 0;
-  font-size: 0.8rem;
-  color: #64748b;
-}
-</style>

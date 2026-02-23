@@ -1,0 +1,97 @@
+.resultBlock {
+    margin-bottom: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.resultBlock summary {
+    padding: 0.5rem 0.75rem;
+    background: #f8fafc;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.resultBlock pre,
+.resultBlock table {
+    margin: 0;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    overflow: auto;
+}
+
+.resultLoading {
+    padding: 1rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.loadingDots {
+    width: 20px;
+    height: 20px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='4' cy='12' r='2' fill='%232563eb' opacity='.4'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%232563eb' opacity='.8'/%3E%3Ccircle cx='20' cy='12' r='2' fill='%232563eb'/%3E%3C/svg%3E") center/contain no-repeat;
+    animation: dotsPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes dotsPulse {
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+.jsonResult {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 0 0 6px 6px;
+    max-height: 200px;
+}
+
+.resultSummary {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+}
+
+.resultSummary p {
+    margin: 0.25rem 0;
+}
+
+.resultEmpty {
+    padding: 0.75rem;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.resultTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.resultTable td {
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.resultTable tr:last-child td {
+    border-bottom: none;
+}
+
+.resultImageWrap {
+    margin-top: 0.75rem;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.resultImageWrap img {
+    width: 100%;
+    display: block;
+}
