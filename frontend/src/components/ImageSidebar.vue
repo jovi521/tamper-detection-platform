@@ -5,7 +5,7 @@
       <div
         v-for="item in historyList"
         :key="item.id"
-        :class="[styles.thumbItem, { active: currentImage?.id === item.id }]"
+        :class="[styles.thumbItem, { [styles.active]: currentImage?.id === item.id }]"
         @click="emit('select', item)"
       >
         <img :alt="item.name" :src="item.preview" />
